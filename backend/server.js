@@ -6,9 +6,9 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 // Import routes
-const userRoutes = require('./routes/userRoutes');
-const subjectRoutes = require('./routes/subjectRoutes');
-const sessionRoutes = require('./routes/sessionRoutes');
+const userRoutes = require('./routes/users');
+const subjectRoutes = require('./routes/subjects');
+const sessionRoutes = require('./routes/sessions');
 
 // Initialize app
 const app = express();
