@@ -1,30 +1,28 @@
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+const dotenv = require('dotenv');
 
+// Load environment variables
+dotenv.config();
+
+// Import routes
+const userRoutes = require('./routes/userRoutes');
+const subjectRoutes = require('./routes/subjectRoutes');
+const sessionRoutes = require('./routes/sessionRoutes');
+
+// Initialize app
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Database connection test
-const pool = require('./config/db');
-
 // Routes
-app.use('/api/users', require('./routes/users'));
-app.use('/api/subjects', require('./routes/subjects'));
-app.use('/api/sessions', require('./routes/sessions'));
-
-// Root route
 app.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: 'StudyBuddy API is running',
+  res.json({ 
+    message: 'Welcome to StudyBuddy API',
     version: '1.0.0',
     endpoints: {
       users: '/api/users',
@@ -34,47 +32,28 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check route
-app.get('/health', async (req, res) => {
-  try {
-    await pool.query('SELECT NOW()');
-    res.json({
-      success: true,
-      message: 'Server and database are healthy',
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Database connection failed',
-      error: error.message
-    });
-  }
+app.use('/api/users', userRoutes);
+app.use('/api/subjects', subjectRoutes);
+app.use('/api/sessions', sessionRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ 
+    error: 'Something went wrong!',
+    message: err.message 
+  });
 });
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Route not found'
-  });
+  res.status(404).json({ error: 'Route not found' });
 });
 
-// Error handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
-});
-
-const PORT = process.env.PORT || 5000;
-
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
-  console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🚀 StudyBuddy API running on http://localhost:${PORT}`);
+  console.log(`📚 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 module.exports = app;
