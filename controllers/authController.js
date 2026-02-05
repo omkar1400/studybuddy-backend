@@ -20,7 +20,7 @@ exports.register = async (req, res) => {
 
     // Check if user already exists
     const existingUsers = await pool.query(
-      'SELECT id FROM Users WHERE email = $1',
+      'SELECT id FROM users WHERE email = $1',
       [email]
     );
 
@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
     // Insert user into database
     // PostgreSQL uses RETURNING to get the inserted row
     const result = await pool.query(
-      'INSERT INTO Users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
+      'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
       [name, email, hashedPassword]
     );
 
@@ -89,7 +89,7 @@ exports.login = async (req, res) => {
 
     // Find user by email
     const result = await pool.query(
-      'SELECT * FROM Users WHERE email = $1',
+      'SELECT * FROM users WHERE email = $1',
       [email]
     );
 
@@ -146,7 +146,7 @@ exports.login = async (req, res) => {
 exports.getProfile = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, name, email, created_at FROM Users WHERE id = $1',
+      'SELECT id, name, email, created_at FROM users WHERE id = $1',
       [req.user.id]
     );
 

@@ -10,8 +10,8 @@ exports.getAllSessions = async (req, res) => {
       `SELECT 
         s.*,
         sub.name as subject_name
-      FROM StudySessions s
-      LEFT JOIN Subjects sub ON s.subject_id = sub.id
+      FROM study_sessions s
+      LEFT JOIN subjects sub ON s.subject_id = sub.id
       WHERE s.user_id = $1
       ORDER BY s.start_time DESC`,
       [req.user.id]
@@ -42,8 +42,8 @@ exports.getSessionById = async (req, res) => {
       `SELECT 
         s.*,
         sub.name as subject_name
-      FROM StudySessions s
-      LEFT JOIN Subjects sub ON s.subject_id = sub.id
+      FROM study_sessions s
+      LEFT JOIN subjects sub ON s.subject_id = sub.id
       WHERE s.id = $1 AND s.user_id = $2`,
       [req.params.id, req.user.id]
     );
@@ -87,7 +87,7 @@ exports.createSession = async (req, res) => {
 
     // Verify subject belongs to user
     const subjectResult = await pool.query(
-      'SELECT id FROM Subjects WHERE id = $1 AND user_id = $2',
+      'SELECT id FROM subjects WHERE id = $1 AND user_id = $2',
       [subject_id, req.user.id]
     );
 
@@ -111,7 +111,7 @@ exports.createSession = async (req, res) => {
 
     // Insert session and return the created row
     const result = await pool.query(
-      `INSERT INTO StudySessions 
+      `INSERT INTO study_sessions 
         (user_id, subject_id, title, description, start_time, end_time, status) 
       VALUES ($1, $2, $3, $4, $5, $6, $7)
       RETURNING *`,
@@ -123,8 +123,8 @@ exports.createSession = async (req, res) => {
       `SELECT 
         s.*,
         sub.name as subject_name
-      FROM StudySessions s
-      LEFT JOIN Subjects sub ON s.subject_id = sub.id
+      FROM study_sessions s
+      LEFT JOIN subjects sub ON s.subject_id = sub.id
       WHERE s.id = $1`,
       [result.rows[0].id]
     );
@@ -154,7 +154,7 @@ exports.updateSession = async (req, res) => {
 
     // Check if session exists and belongs to user
     const existingSessionResult = await pool.query(
-      'SELECT * FROM StudySessions WHERE id = $1 AND user_id = $2',
+      'SELECT * FROM study_sessions WHERE id = $1 AND user_id = $2',
       [req.params.id, req.user.id]
     );
 
@@ -170,7 +170,7 @@ exports.updateSession = async (req, res) => {
     // If subject_id is being updated, verify it belongs to user
     if (subject_id && subject_id !== existingSession.subject_id) {
       const subjectResult = await pool.query(
-        'SELECT id FROM Subjects WHERE id = $1 AND user_id = $2',
+        'SELECT id FROM subjects WHERE id = $1 AND user_id = $2',
         [subject_id, req.user.id]
       );
 
@@ -195,7 +195,7 @@ exports.updateSession = async (req, res) => {
 
     // Update session
     await pool.query(
-      `UPDATE StudySessions 
+      `UPDATE study_sessions 
       SET subject_id = $1, title = $2, description = $3, start_time = $4, end_time = $5, status = $6
       WHERE id = $7`,
       [
@@ -214,8 +214,8 @@ exports.updateSession = async (req, res) => {
       `SELECT 
         s.*,
         sub.name as subject_name
-      FROM StudySessions s
-      LEFT JOIN Subjects sub ON s.subject_id = sub.id
+      FROM study_sessions s
+      LEFT JOIN subjects sub ON s.subject_id = sub.id
       WHERE s.id = $1`,
       [req.params.id]
     );
@@ -243,7 +243,7 @@ exports.deleteSession = async (req, res) => {
   try {
     // Check if session exists and belongs to user
     const existingSessionResult = await pool.query(
-      'SELECT * FROM StudySessions WHERE id = $1 AND user_id = $2',
+      'SELECT * FROM study_sessions WHERE id = $1 AND user_id = $2',
       [req.params.id, req.user.id]
     );
 
@@ -256,7 +256,7 @@ exports.deleteSession = async (req, res) => {
 
     // Delete session
     await pool.query(
-      'DELETE FROM StudySessions WHERE id = $1',
+      'DELETE FROM study_sessions WHERE id = $1',
       [req.params.id]
     );
 

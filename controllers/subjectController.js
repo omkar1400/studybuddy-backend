@@ -7,7 +7,7 @@ const { pool } = require('../config/db');
 exports.getAllSubjects = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM Subjects WHERE user_id = $1 ORDER BY created_at DESC',
+      'SELECT * FROM subjects WHERE user_id = $1 ORDER BY created_at DESC',
       [req.user.id]
     );
 
@@ -33,7 +33,7 @@ exports.getAllSubjects = async (req, res) => {
 exports.getSubjectById = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT * FROM Subjects WHERE id = $1 AND user_id = $2',
+      'SELECT * FROM subjects WHERE id = $1 AND user_id = $2',
       [req.params.id, req.user.id]
     );
 
@@ -76,7 +76,7 @@ exports.createSubject = async (req, res) => {
 
     // PostgreSQL uses RETURNING to get the inserted row
     const result = await pool.query(
-      'INSERT INTO Subjects (user_id, name, description) VALUES ($1, $2, $3) RETURNING *',
+      'INSERT INTO subjects (user_id, name, description) VALUES ($1, $2, $3) RETURNING *',
       [req.user.id, name, description || null]
     );
 
@@ -105,7 +105,7 @@ exports.updateSubject = async (req, res) => {
 
     // Check if subject exists and belongs to user
     const existingSubject = await pool.query(
-      'SELECT * FROM Subjects WHERE id = $1 AND user_id = $2',
+      'SELECT * FROM subjects WHERE id = $1 AND user_id = $2',
       [req.params.id, req.user.id]
     );
 
@@ -120,7 +120,7 @@ exports.updateSubject = async (req, res) => {
 
     // Update subject using RETURNING to get updated row
     const result = await pool.query(
-      'UPDATE Subjects SET name = $1, description = $2 WHERE id = $3 RETURNING *',
+      'UPDATE subjects SET name = $1, description = $2 WHERE id = $3 RETURNING *',
       [
         name || subject.name,
         description !== undefined ? description : subject.description,
@@ -151,7 +151,7 @@ exports.deleteSubject = async (req, res) => {
   try {
     // Check if subject exists and belongs to user
     const existingSubject = await pool.query(
-      'SELECT * FROM Subjects WHERE id = $1 AND user_id = $2',
+      'SELECT * FROM subjects WHERE id = $1 AND user_id = $2',
       [req.params.id, req.user.id]
     );
 
@@ -164,7 +164,7 @@ exports.deleteSubject = async (req, res) => {
 
     // Delete subject (cascade will delete related sessions)
     await pool.query(
-      'DELETE FROM Subjects WHERE id = $1',
+      'DELETE FROM subjects WHERE id = $1',
       [req.params.id]
     );
 
