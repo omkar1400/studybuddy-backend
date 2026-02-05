@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { promisePool } = require('../config/db');
+const { pool } = require('../config/db');
 
 /**
  * Register a new user
@@ -19,12 +19,12 @@ exports.register = async (req, res) => {
     }
 
     // Check if user already exists
-    const [existingUsers] = await promisePool.query(
-      'SELECT id FROM Users WHERE email = ?',
+    const existingUsers = await pool.query(
+      'SELECT id FROM Users WHERE email = $1',
       [email]
     );
 
-    if (existingUsers.length > 0) {
+    if (existingUsers.rows.length > 0) {
       return res.status(400).json({
         success: false,
         message: 'User with this email already exists'
@@ -36,14 +36,17 @@ exports.register = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Insert user into database
-    const [result] = await promisePool.query(
-      'INSERT INTO Users (name, email, password) VALUES (?, ?, ?)',
+    // PostgreSQL uses RETURNING to get the inserted row
+    const result = await pool.query(
+      'INSERT INTO Users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email',
       [name, email, hashedPassword]
     );
 
+    const newUser = result.rows[0];
+
     // Create JWT token
     const token = jwt.sign(
-      { id: result.insertId, email },
+      { id: newUser.id, email: newUser.email },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
@@ -52,9 +55,9 @@ exports.register = async (req, res) => {
       success: true,
       message: 'User registered successfully',
       data: {
-        id: result.insertId,
-        name,
-        email,
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
         token
       }
     });
@@ -85,19 +88,19 @@ exports.login = async (req, res) => {
     }
 
     // Find user by email
-    const [users] = await promisePool.query(
-      'SELECT * FROM Users WHERE email = ?',
+    const result = await pool.query(
+      'SELECT * FROM Users WHERE email = $1',
       [email]
     );
 
-    if (users.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
     }
 
-    const user = users[0];
+    const user = result.rows[0];
 
     // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
@@ -142,12 +145,12 @@ exports.login = async (req, res) => {
  */
 exports.getProfile = async (req, res) => {
   try {
-    const [users] = await promisePool.query(
-      'SELECT id, name, email, created_at FROM Users WHERE id = ?',
+    const result = await pool.query(
+      'SELECT id, name, email, created_at FROM Users WHERE id = $1',
       [req.user.id]
     );
 
-    if (users.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
@@ -156,7 +159,7 @@ exports.getProfile = async (req, res) => {
 
     res.json({
       success: true,
-      data: users[0]
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Get profile error:', error);

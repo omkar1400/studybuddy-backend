@@ -1,4 +1,4 @@
-const { promisePool } = require('../config/db');
+const { pool } = require('../config/db');
 
 /**
  * Get all study sessions for the logged-in user
@@ -6,21 +6,21 @@ const { promisePool } = require('../config/db');
  */
 exports.getAllSessions = async (req, res) => {
   try {
-    const [sessions] = await promisePool.query(
+    const result = await pool.query(
       `SELECT 
         s.*,
         sub.name as subject_name
       FROM StudySessions s
       LEFT JOIN Subjects sub ON s.subject_id = sub.id
-      WHERE s.user_id = ?
+      WHERE s.user_id = $1
       ORDER BY s.start_time DESC`,
       [req.user.id]
     );
 
     res.json({
       success: true,
-      count: sessions.length,
-      data: sessions
+      count: result.rows.length,
+      data: result.rows
     });
   } catch (error) {
     console.error('Get sessions error:', error);
@@ -38,17 +38,17 @@ exports.getAllSessions = async (req, res) => {
  */
 exports.getSessionById = async (req, res) => {
   try {
-    const [sessions] = await promisePool.query(
+    const result = await pool.query(
       `SELECT 
         s.*,
         sub.name as subject_name
       FROM StudySessions s
       LEFT JOIN Subjects sub ON s.subject_id = sub.id
-      WHERE s.id = ? AND s.user_id = ?`,
+      WHERE s.id = $1 AND s.user_id = $2`,
       [req.params.id, req.user.id]
     );
 
-    if (sessions.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Study session not found'
@@ -57,7 +57,7 @@ exports.getSessionById = async (req, res) => {
 
     res.json({
       success: true,
-      data: sessions[0]
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Get session error:', error);
@@ -86,12 +86,12 @@ exports.createSession = async (req, res) => {
     }
 
     // Verify subject belongs to user
-    const [subjects] = await promisePool.query(
-      'SELECT id FROM Subjects WHERE id = ? AND user_id = ?',
+    const subjectResult = await pool.query(
+      'SELECT id FROM Subjects WHERE id = $1 AND user_id = $2',
       [subject_id, req.user.id]
     );
 
-    if (subjects.length === 0) {
+    if (subjectResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Subject not found or does not belong to you'
@@ -109,28 +109,30 @@ exports.createSession = async (req, res) => {
       });
     }
 
-    const [result] = await promisePool.query(
+    // Insert session and return the created row
+    const result = await pool.query(
       `INSERT INTO StudySessions 
         (user_id, subject_id, title, description, start_time, end_time, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *`,
       [req.user.id, subject_id, title, description || null, start_time, end_time, status || 'pending']
     );
 
     // Get the created session with subject name
-    const [newSession] = await promisePool.query(
+    const newSessionResult = await pool.query(
       `SELECT 
         s.*,
         sub.name as subject_name
       FROM StudySessions s
       LEFT JOIN Subjects sub ON s.subject_id = sub.id
-      WHERE s.id = ?`,
-      [result.insertId]
+      WHERE s.id = $1`,
+      [result.rows[0].id]
     );
 
     res.status(201).json({
       success: true,
       message: 'Study session created successfully',
-      data: newSession[0]
+      data: newSessionResult.rows[0]
     });
   } catch (error) {
     console.error('Create session error:', error);
@@ -151,28 +153,28 @@ exports.updateSession = async (req, res) => {
     const { subject_id, title, description, start_time, end_time, status } = req.body;
 
     // Check if session exists and belongs to user
-    const [existingSessions] = await promisePool.query(
-      'SELECT * FROM StudySessions WHERE id = ? AND user_id = ?',
+    const existingSessionResult = await pool.query(
+      'SELECT * FROM StudySessions WHERE id = $1 AND user_id = $2',
       [req.params.id, req.user.id]
     );
 
-    if (existingSessions.length === 0) {
+    if (existingSessionResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Study session not found'
       });
     }
 
-    const existingSession = existingSessions[0];
+    const existingSession = existingSessionResult.rows[0];
 
     // If subject_id is being updated, verify it belongs to user
     if (subject_id && subject_id !== existingSession.subject_id) {
-      const [subjects] = await promisePool.query(
-        'SELECT id FROM Subjects WHERE id = ? AND user_id = ?',
+      const subjectResult = await pool.query(
+        'SELECT id FROM Subjects WHERE id = $1 AND user_id = $2',
         [subject_id, req.user.id]
       );
 
-      if (subjects.length === 0) {
+      if (subjectResult.rows.length === 0) {
         return res.status(404).json({
           success: false,
           message: 'Subject not found or does not belong to you'
@@ -192,10 +194,10 @@ exports.updateSession = async (req, res) => {
     }
 
     // Update session
-    await promisePool.query(
+    await pool.query(
       `UPDATE StudySessions 
-      SET subject_id = ?, title = ?, description = ?, start_time = ?, end_time = ?, status = ?
-      WHERE id = ?`,
+      SET subject_id = $1, title = $2, description = $3, start_time = $4, end_time = $5, status = $6
+      WHERE id = $7`,
       [
         subject_id || existingSession.subject_id,
         title || existingSession.title,
@@ -208,20 +210,20 @@ exports.updateSession = async (req, res) => {
     );
 
     // Get updated session with subject name
-    const [updatedSession] = await promisePool.query(
+    const updatedSessionResult = await pool.query(
       `SELECT 
         s.*,
         sub.name as subject_name
       FROM StudySessions s
       LEFT JOIN Subjects sub ON s.subject_id = sub.id
-      WHERE s.id = ?`,
+      WHERE s.id = $1`,
       [req.params.id]
     );
 
     res.json({
       success: true,
       message: 'Study session updated successfully',
-      data: updatedSession[0]
+      data: updatedSessionResult.rows[0]
     });
   } catch (error) {
     console.error('Update session error:', error);
@@ -240,12 +242,12 @@ exports.updateSession = async (req, res) => {
 exports.deleteSession = async (req, res) => {
   try {
     // Check if session exists and belongs to user
-    const [existingSessions] = await promisePool.query(
-      'SELECT * FROM StudySessions WHERE id = ? AND user_id = ?',
+    const existingSessionResult = await pool.query(
+      'SELECT * FROM StudySessions WHERE id = $1 AND user_id = $2',
       [req.params.id, req.user.id]
     );
 
-    if (existingSessions.length === 0) {
+    if (existingSessionResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Study session not found'
@@ -253,8 +255,8 @@ exports.deleteSession = async (req, res) => {
     }
 
     // Delete session
-    await promisePool.query(
-      'DELETE FROM StudySessions WHERE id = ?',
+    await pool.query(
+      'DELETE FROM StudySessions WHERE id = $1',
       [req.params.id]
     );
 

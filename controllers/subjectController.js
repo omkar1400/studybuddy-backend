@@ -1,4 +1,4 @@
-const { promisePool } = require('../config/db');
+const { pool } = require('../config/db');
 
 /**
  * Get all subjects for the logged-in user
@@ -6,15 +6,15 @@ const { promisePool } = require('../config/db');
  */
 exports.getAllSubjects = async (req, res) => {
   try {
-    const [subjects] = await promisePool.query(
-      'SELECT * FROM Subjects WHERE user_id = ? ORDER BY created_at DESC',
+    const result = await pool.query(
+      'SELECT * FROM Subjects WHERE user_id = $1 ORDER BY created_at DESC',
       [req.user.id]
     );
 
     res.json({
       success: true,
-      count: subjects.length,
-      data: subjects
+      count: result.rows.length,
+      data: result.rows
     });
   } catch (error) {
     console.error('Get subjects error:', error);
@@ -32,12 +32,12 @@ exports.getAllSubjects = async (req, res) => {
  */
 exports.getSubjectById = async (req, res) => {
   try {
-    const [subjects] = await promisePool.query(
-      'SELECT * FROM Subjects WHERE id = ? AND user_id = ?',
+    const result = await pool.query(
+      'SELECT * FROM Subjects WHERE id = $1 AND user_id = $2',
       [req.params.id, req.user.id]
     );
 
-    if (subjects.length === 0) {
+    if (result.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Subject not found'
@@ -46,7 +46,7 @@ exports.getSubjectById = async (req, res) => {
 
     res.json({
       success: true,
-      data: subjects[0]
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Get subject error:', error);
@@ -74,21 +74,16 @@ exports.createSubject = async (req, res) => {
       });
     }
 
-    const [result] = await promisePool.query(
-      'INSERT INTO Subjects (user_id, name, description) VALUES (?, ?, ?)',
+    // PostgreSQL uses RETURNING to get the inserted row
+    const result = await pool.query(
+      'INSERT INTO Subjects (user_id, name, description) VALUES ($1, $2, $3) RETURNING *',
       [req.user.id, name, description || null]
-    );
-
-    // Get the created subject
-    const [newSubject] = await promisePool.query(
-      'SELECT * FROM Subjects WHERE id = ?',
-      [result.insertId]
     );
 
     res.status(201).json({
       success: true,
       message: 'Subject created successfully',
-      data: newSubject[0]
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Create subject error:', error);
@@ -109,34 +104,34 @@ exports.updateSubject = async (req, res) => {
     const { name, description } = req.body;
 
     // Check if subject exists and belongs to user
-    const [existingSubjects] = await promisePool.query(
-      'SELECT * FROM Subjects WHERE id = ? AND user_id = ?',
+    const existingSubject = await pool.query(
+      'SELECT * FROM Subjects WHERE id = $1 AND user_id = $2',
       [req.params.id, req.user.id]
     );
 
-    if (existingSubjects.length === 0) {
+    if (existingSubject.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Subject not found'
       });
     }
 
-    // Update subject
-    await promisePool.query(
-      'UPDATE Subjects SET name = ?, description = ? WHERE id = ?',
-      [name || existingSubjects[0].name, description !== undefined ? description : existingSubjects[0].description, req.params.id]
-    );
+    const subject = existingSubject.rows[0];
 
-    // Get updated subject
-    const [updatedSubject] = await promisePool.query(
-      'SELECT * FROM Subjects WHERE id = ?',
-      [req.params.id]
+    // Update subject using RETURNING to get updated row
+    const result = await pool.query(
+      'UPDATE Subjects SET name = $1, description = $2 WHERE id = $3 RETURNING *',
+      [
+        name || subject.name,
+        description !== undefined ? description : subject.description,
+        req.params.id
+      ]
     );
 
     res.json({
       success: true,
       message: 'Subject updated successfully',
-      data: updatedSubject[0]
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Update subject error:', error);
@@ -155,12 +150,12 @@ exports.updateSubject = async (req, res) => {
 exports.deleteSubject = async (req, res) => {
   try {
     // Check if subject exists and belongs to user
-    const [existingSubjects] = await promisePool.query(
-      'SELECT * FROM Subjects WHERE id = ? AND user_id = ?',
+    const existingSubject = await pool.query(
+      'SELECT * FROM Subjects WHERE id = $1 AND user_id = $2',
       [req.params.id, req.user.id]
     );
 
-    if (existingSubjects.length === 0) {
+    if (existingSubject.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Subject not found'
@@ -168,8 +163,8 @@ exports.deleteSubject = async (req, res) => {
     }
 
     // Delete subject (cascade will delete related sessions)
-    await promisePool.query(
-      'DELETE FROM Subjects WHERE id = ?',
+    await pool.query(
+      'DELETE FROM Subjects WHERE id = $1',
       [req.params.id]
     );
 
