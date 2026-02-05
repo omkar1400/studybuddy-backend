@@ -1,0 +1,163 @@
+===========================================
+PROG2500 - Sprint 1 Submission
+===========================================
+
+Student Name: Omkar Singh
+Student ID: 8781929
+Project: StudyBuddy - Study Session Planner
+
+-------------------------------------------
+SPRINT 1 - BACKEND DEVELOPMENT
+-------------------------------------------
+
+GitHub Repository URL:
+[PASTE YOUR GITHUB REPOSITORY URL HERE]
+
+Example: https://github.com/omkarsingh/studybuddy
+
+Live Deployment URL (Render):
+[PASTE YOUR RENDER DEPLOYMENT URL HERE]
+
+Example: https://studybuddy-api.onrender.com
+
+-------------------------------------------
+COMPLETED FEATURES
+-------------------------------------------
+
+✅ Node.js and Express.js Setup
+✅ MySQL Database with 3 Tables (Users, Subjects, StudySessions)
+✅ RESTful API Architecture
+
+Authentication:
+✅ User Registration (POST /api/users/register)
+✅ User Login with JWT (POST /api/users/login)
+✅ Password hashing with bcrypt
+✅ JWT token generation and validation
+
+Subjects API:
+✅ Get all subjects (GET /api/subjects)
+✅ Get subject by ID (GET /api/subjects/:id)
+✅ Create subject (POST /api/subjects)
+✅ Update subject (PUT /api/subjects/:id)
+✅ Delete subject (DELETE /api/subjects/:id)
+
+Study Sessions API:
+✅ Get all sessions (GET /api/sessions)
+✅ Get session by ID (GET /api/sessions/:id)
+✅ Create session (POST /api/sessions)
+✅ Update session (PUT /api/sessions/:id)
+✅ Delete session (DELETE /api/sessions/:id)
+
+Additional Features:
+✅ Input validation
+✅ Error handling
+✅ CORS enabled for frontend integration
+✅ Authentication middleware
+✅ Database relationships (Foreign Keys)
+✅ Prepared for deployment
+
+-------------------------------------------
+DATABASE SCHEMA
+-------------------------------------------
+
+Table 1: Users
+- id (PRIMARY KEY)
+- name
+- email (UNIQUE)
+- password (hashed)
+- created_at
+
+Table 2: Subjects
+- id (PRIMARY KEY)
+- user_id (FOREIGN KEY → Users)
+- name
+- description
+- created_at
+
+Table 3: StudySessions
+- id (PRIMARY KEY)
+- user_id (FOREIGN KEY → Users)
+- subject_id (FOREIGN KEY → Subjects)
+- title
+- description
+- start_time
+- end_time
+- status (pending/completed/cancelled)
+- created_at
+
+-------------------------------------------
+TECHNOLOGY STACK
+-------------------------------------------
+
+Backend:
+- Node.js v18+
+- Express.js 4.18
+- MySQL2 3.6
+
+Security:
+- bcryptjs (password hashing)
+- jsonwebtoken (JWT authentication)
+
+Other:
+- dotenv (environment variables)
+- cors (cross-origin support)
+- express-validator (input validation)
+
+-------------------------------------------
+HOW TO TEST
+-------------------------------------------
+
+1. Clone the repository
+2. Run: npm install
+3. Set up .env file with database credentials
+4. Run database/schema.sql to create tables
+5. Start server: npm start
+6. API will be available at http://localhost:5000
+
+See API_TESTING.md for detailed endpoint examples.
+
+-------------------------------------------
+DEMO PREPARATION
+-------------------------------------------
+
+I am ready to demonstrate:
+1. Running the server locally
+2. Making API requests (register, login, CRUD operations)
+3. Explaining code structure (routes, controllers, middleware)
+4. Showing database relationships
+5. Explaining authentication flow
+6. Showing Git commit history
+
+-------------------------------------------
+FILES TO REVIEW
+-------------------------------------------
+
+Key Files:
+- server.js (main entry point)
+- config/db.js (database connection)
+- middleware/auth.js (JWT authentication)
+- controllers/ (business logic)
+- routes/ (API endpoints)
+- database/schema.sql (database schema)
+
+Documentation:
+- README.md (project overview)
+- SETUP.md (local setup instructions)
+- API_TESTING.md (API testing guide)
+- DEPLOYMENT.md (deployment guide)
+
+-------------------------------------------
+NOTES
+-------------------------------------------
+
+[Add any additional notes or special instructions here]
+
+Example:
+- Database is deployed on Render MySQL
+- JWT_SECRET is securely configured in environment variables
+- Sample data is included in schema.sql for testing
+- All endpoints are tested and working
+
+-------------------------------------------
+
+Submitted on: [DATE]
