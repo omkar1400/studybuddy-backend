@@ -1,19 +1,30 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// PostgreSQL connection configuration
-const pool = new Pool({
-  // If DATABASE_URL is provided (like on Render), use it
-  connectionString: process.env.DATABASE_URL,
-  // Otherwise, use individual connection parameters
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  user: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME || 'studybuddy',
-  // SSL configuration for production (Render requires this)
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+let pool;
+
+// Use DATABASE_URL if available (Render/production)
+if (process.env.DATABASE_URL) {
+  const url = new URL(process.env.DATABASE_URL);
+  pool = new Pool({
+    host: url.hostname,
+    port: parseInt(url.port) || 5432,
+    database: url.pathname.slice(1),
+    user: url.username,
+    password: decodeURIComponent(url.password),
+    ssl: { rejectUnauthorized: false }
+  });
+} else {
+  // Use individual connection parameters (local development)
+  pool = new Pool({
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME || 'studybuddy',
+    ssl: false
+  });
+}
 
 // Test the connection
 pool.on('connect', () => {

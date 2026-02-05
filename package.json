@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js"
+    ,"init-db": "node backend/config/initDb.js"
   },
   "keywords": ["express", "postgresql", "rest-api", "study-planner"],
   "author": "Omkar Singh",

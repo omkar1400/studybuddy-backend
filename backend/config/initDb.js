@@ -1,8 +1,23 @@
-const pool = require('./db');
+const { Pool } = require('pg');
+require('dotenv').config();
+
+// Direct connection to Render database
+const pool = new Pool({
+  host: 'dpg-d623o31r0fns73f5hme0-a.oregon-postgres.render.com',
+  port: 5432,
+  database: 'studybuddy_94x2',
+  user: 'studybuddy_94x2_user',
+  password: 'P9uNrpUUdcrjafBhgQ2mY2h3SIPjzkKN',
+  ssl: { rejectUnauthorized: false }
+});
 
 const initDatabase = async () => {
   try {
     console.log('🚀 Starting database initialization...');
+    
+    // Test connection
+    await pool.query('SELECT NOW()');
+    console.log('✅ Database connected\n');
 
     // Create Users table
     await pool.query(`
@@ -53,18 +68,31 @@ const initDatabase = async () => {
     // Create indexes for better performance
     await pool.query(`
       CREATE INDEX IF NOT EXISTS idx_subjects_user_id ON subjects(user_id);
+    `);
+    await pool.query(`
       CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON study_sessions(user_id);
+    `);
+    await pool.query(`
       CREATE INDEX IF NOT EXISTS idx_sessions_subject_id ON study_sessions(subject_id);
+    `);
+    await pool.query(`
       CREATE INDEX IF NOT EXISTS idx_sessions_status ON study_sessions(status);
     `);
     console.log('✅ Indexes created');
 
-    console.log('🎉 Database initialization completed successfully!');
-    process.exit(0);
+    console.log('\n🎉 Database initialization completed successfully!\n');
+    
   } catch (error) {
-    console.error('❌ Database initialization failed:', error);
-    process.exit(1);
+    console.error('❌ Database initialization failed:', error.message);
+    throw error;
+  } finally {
+    await pool.end();
   }
 };
 
-initDatabase();
+initDatabase()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error('Failed:', error.message);
+    process.exit(1);
+  });
