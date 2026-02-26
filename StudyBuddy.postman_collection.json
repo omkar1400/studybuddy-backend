@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "StudyBuddy API",
-    "description": "Complete API collection for StudyBuddy backend — PROG2500 Phase 1",
+    "description": "Complete API collection for StudyBuddy backend — PROG2500 Phase 1\n\n▶ TESTING ORDER:\n1. Register User  → auto-saves TOKEN + USER_ID\n2. Login User     → auto-saves TOKEN + USER_ID\n3. Create Subject → auto-saves SUBJECT_ID\n4. Create Study Session → auto-saves SESSION_ID\n5. All remaining requests use those saved variables automatically",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -10,6 +10,22 @@
       "item": [
         {
           "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.token) {",
+                  "  pm.collectionVariables.set('TOKEN', json.data.token);",
+                  "  pm.collectionVariables.set('USER_ID', json.data.user.id);",
+                  "  console.log('✅ TOKEN + USER_ID saved. User ID:', json.data.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -23,11 +39,28 @@
               "raw": "{{BASE_URL}}/api/users/register",
               "host": ["{{BASE_URL}}"],
               "path": ["api", "users", "register"]
-            }
+            },
+            "description": "Creates a new user account. Automatically saves TOKEN and USER_ID to collection variables on success (201). Run this first before any protected routes."
           }
         },
         {
           "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.token) {",
+                  "  pm.collectionVariables.set('TOKEN', json.data.token);",
+                  "  pm.collectionVariables.set('USER_ID', json.data.user.id);",
+                  "  console.log('✅ TOKEN + USER_ID saved. User ID:', json.data.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -41,7 +74,8 @@
               "raw": "{{BASE_URL}}/api/users/login",
               "host": ["{{BASE_URL}}"],
               "path": ["api", "users", "login"]
-            }
+            },
+            "description": "Authenticates an existing user and returns a JWT (expires in 7 days). Automatically saves TOKEN and USER_ID to collection variables. Use this to refresh the token if it expires."
           }
         },
         {
@@ -55,7 +89,8 @@
               "raw": "{{BASE_URL}}/api/users/profile",
               "host": ["{{BASE_URL}}"],
               "path": ["api", "users", "profile"]
-            }
+            },
+            "description": "Returns the profile of the currently authenticated user (id, name, email, created_at). Password is never returned. Requires a valid JWT in Authorization header."
           }
         }
       ]
@@ -74,7 +109,8 @@
               "raw": "{{BASE_URL}}/api/users",
               "host": ["{{BASE_URL}}"],
               "path": ["api", "users"]
-            }
+            },
+            "description": "Returns all registered users (id, name, email only — passwords are never exposed). Requires a valid JWT."
           }
         },
         {
@@ -85,10 +121,11 @@
               { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
-              "raw": "{{BASE_URL}}/api/users/1",
+              "raw": "{{BASE_URL}}/api/users/{{USER_ID}}",
               "host": ["{{BASE_URL}}"],
-              "path": ["api", "users", "1"]
-            }
+              "path": ["api", "users", "{{USER_ID}}"]
+            },
+            "description": "Returns a single user by ID. USER_ID is auto-saved when you run Register or Login."
           }
         },
         {
@@ -104,10 +141,11 @@
               "raw": "{\n  \"name\": \"John Updated\",\n  \"email\": \"john.updated@example.com\"\n}"
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/users/1",
+              "raw": "{{BASE_URL}}/api/users/{{USER_ID}}",
               "host": ["{{BASE_URL}}"],
-              "path": ["api", "users", "1"]
-            }
+              "path": ["api", "users", "{{USER_ID}}"]
+            },
+            "description": "Updates the authenticated user's own account (name and/or email). A user can only update their own record — attempting to update another user returns 403 Forbidden."
           }
         },
         {
@@ -118,10 +156,11 @@
               { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
-              "raw": "{{BASE_URL}}/api/users/1",
+              "raw": "{{BASE_URL}}/api/users/{{USER_ID}}",
               "host": ["{{BASE_URL}}"],
-              "path": ["api", "users", "1"]
-            }
+              "path": ["api", "users", "{{USER_ID}}"]
+            },
+            "description": "Permanently deletes the authenticated user's own account. A user can only delete their own record — attempting to delete another user returns 403 Forbidden."
           }
         }
       ]
@@ -140,7 +179,8 @@
               "raw": "{{BASE_URL}}/api/subjects",
               "host": ["{{BASE_URL}}"],
               "path": ["api", "subjects"]
-            }
+            },
+            "description": "Returns all subjects belonging to the authenticated user, ordered by creation date (newest first). Users only see their own subjects — data is fully isolated."
           }
         },
         {
@@ -151,14 +191,30 @@
               { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
-              "raw": "{{BASE_URL}}/api/subjects/1",
+              "raw": "{{BASE_URL}}/api/subjects/{{SUBJECT_ID}}",
               "host": ["{{BASE_URL}}"],
-              "path": ["api", "subjects", "1"]
-            }
+              "path": ["api", "subjects", "{{SUBJECT_ID}}"]
+            },
+            "description": "Returns a single subject by ID. Returns 404 if the subject does not exist or belongs to another user. SUBJECT_ID is auto-saved when you run Create Subject."
           }
         },
         {
           "name": "Create Subject",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('SUBJECT_ID', json.data.id);",
+                  "  console.log('✅ SUBJECT_ID saved:', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -173,7 +229,8 @@
               "raw": "{{BASE_URL}}/api/subjects",
               "host": ["{{BASE_URL}}"],
               "path": ["api", "subjects"]
-            }
+            },
+            "description": "Creates a new subject for the authenticated user. 'name' is required; 'description' is optional. Automatically saves SUBJECT_ID to collection variables — run this before Create Study Session."
           }
         },
         {
@@ -189,10 +246,11 @@
               "raw": "{\n  \"name\": \"Advanced Mathematics\",\n  \"description\": \"Calculus, Linear Algebra, and Differential Equations\"\n}"
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/subjects/1",
+              "raw": "{{BASE_URL}}/api/subjects/{{SUBJECT_ID}}",
               "host": ["{{BASE_URL}}"],
-              "path": ["api", "subjects", "1"]
-            }
+              "path": ["api", "subjects", "{{SUBJECT_ID}}"]
+            },
+            "description": "Updates an existing subject. All fields are optional — omitted fields retain their current values. Only the owner can update their subjects."
           }
         },
         {
@@ -203,10 +261,11 @@
               { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
-              "raw": "{{BASE_URL}}/api/subjects/1",
+              "raw": "{{BASE_URL}}/api/subjects/{{SUBJECT_ID}}",
               "host": ["{{BASE_URL}}"],
-              "path": ["api", "subjects", "1"]
-            }
+              "path": ["api", "subjects", "{{SUBJECT_ID}}"]
+            },
+            "description": "Permanently deletes a subject and all its linked study sessions (ON DELETE CASCADE). Only the owner can delete their subjects."
           }
         }
       ]
@@ -225,7 +284,8 @@
               "raw": "{{BASE_URL}}/api/sessions",
               "host": ["{{BASE_URL}}"],
               "path": ["api", "sessions"]
-            }
+            },
+            "description": "Returns all study sessions for the authenticated user, joined with subject names. Ordered by start_time (newest first)."
           }
         },
         {
@@ -236,10 +296,11 @@
               { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
-              "raw": "{{BASE_URL}}/api/sessions/1",
+              "raw": "{{BASE_URL}}/api/sessions/{{SESSION_ID}}",
               "host": ["{{BASE_URL}}"],
-              "path": ["api", "sessions", "1"]
-            }
+              "path": ["api", "sessions", "{{SESSION_ID}}"]
+            },
+            "description": "Returns a single study session by ID, including subject name and description. SESSION_ID is auto-saved when you run Create Study Session."
           }
         },
         {
@@ -253,11 +314,27 @@
               "raw": "{{BASE_URL}}/api/sessions/status/pending",
               "host": ["{{BASE_URL}}"],
               "path": ["api", "sessions", "status", "pending"]
-            }
+            },
+            "description": "Filters the authenticated user's sessions by status. Valid values: pending | completed | cancelled. Returns 400 for any other value."
           }
         },
         {
           "name": "Create Study Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.data && json.data.id) {",
+                  "  pm.collectionVariables.set('SESSION_ID', json.data.id);",
+                  "  console.log('✅ SESSION_ID saved:', json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -266,13 +343,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"subject_id\": 1,\n  \"title\": \"Calculus Review\",\n  \"description\": \"Review derivatives and integrals\",\n  \"start_time\": \"2026-03-10 14:00:00\",\n  \"end_time\": \"2026-03-10 16:00:00\",\n  \"status\": \"pending\"\n}"
+              "raw": "{\n  \"subject_id\": {{SUBJECT_ID}},\n  \"title\": \"Calculus Review\",\n  \"description\": \"Review derivatives and integrals\",\n  \"start_time\": \"2026-03-10 14:00:00\",\n  \"end_time\": \"2026-03-10 16:00:00\",\n  \"status\": \"pending\"\n}"
             },
             "url": {
               "raw": "{{BASE_URL}}/api/sessions",
               "host": ["{{BASE_URL}}"],
               "path": ["api", "sessions"]
-            }
+            },
+            "description": "Creates a new study session linked to a subject. Required: subject_id, title, start_time, end_time. end_time must be after start_time. Status defaults to 'pending'. Automatically saves SESSION_ID. Run Create Subject first."
           }
         },
         {
@@ -288,10 +366,11 @@
               "raw": "{\n  \"title\": \"Advanced Calculus Review\",\n  \"status\": \"completed\"\n}"
             },
             "url": {
-              "raw": "{{BASE_URL}}/api/sessions/1",
+              "raw": "{{BASE_URL}}/api/sessions/{{SESSION_ID}}",
               "host": ["{{BASE_URL}}"],
-              "path": ["api", "sessions", "1"]
-            }
+              "path": ["api", "sessions", "{{SESSION_ID}}"]
+            },
+            "description": "Updates an existing study session. All fields are optional — omitted fields retain current values. Valid status values: pending | completed | cancelled."
           }
         },
         {
@@ -302,10 +381,11 @@
               { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
-              "raw": "{{BASE_URL}}/api/sessions/1",
+              "raw": "{{BASE_URL}}/api/sessions/{{SESSION_ID}}",
               "host": ["{{BASE_URL}}"],
-              "path": ["api", "sessions", "1"]
-            }
+              "path": ["api", "sessions", "{{SESSION_ID}}"]
+            },
+            "description": "Permanently deletes a study session. Only the owner can delete their own sessions."
           }
         }
       ]
@@ -319,6 +399,21 @@
     },
     {
       "key": "TOKEN",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "USER_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "SUBJECT_ID",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "SESSION_ID",
       "value": "",
       "type": "string"
     }
