@@ -169,7 +169,7 @@ POST /api/users/register
 Content-Type: application/json
 
 {
-  "name": "John Doe",
+  "name": "ohnson",
   "email": "john@example.com",
   "password": "securePassword123"
 }
@@ -183,7 +183,7 @@ Content-Type: application/json
   "data": {
     "user": {
       "id": 1,
-      "name": "John Doe",
+      "name": "ohnson",
       "email": "john@example.com",
       "created_at": "2026-02-04T10:00:00.000Z"
     },
@@ -211,7 +211,7 @@ Content-Type: application/json
   "data": {
     "user": {
       "id": 1,
-      "name": "John Doe",
+      "name": "ohnson",
       "email": "john@example.com"
     },
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -231,7 +231,7 @@ Authorization: Bearer <token>
   "success": true,
   "data": {
     "id": 1,
-    "name": "John Doe",
+    "name": "ohnson",
     "email": "john@example.com",
     "created_at": "2026-02-04T10:00:00.000Z"
   }

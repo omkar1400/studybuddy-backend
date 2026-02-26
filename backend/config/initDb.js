@@ -1,15 +1,29 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// Direct connection to Render database
-const pool = new Pool({
-  host: 'dpg-d623o31r0fns73f5hme0-a.oregon-postgres.render.com',
-  port: 5432,
-  database: 'studybuddy_94x2',
-  user: 'studybuddy_94x2_user',
-  password: 'P9uNrpUUdcrjafBhgQ2mY2h3SIPjzkKN',
-  ssl: { rejectUnauthorized: false }
-});
+// Use DATABASE_URL if available (Render/production), otherwise use individual params
+let pool;
+
+if (process.env.DATABASE_URL) {
+  const url = new URL(process.env.DATABASE_URL);
+  pool = new Pool({
+    host: url.hostname,
+    port: parseInt(url.port) || 5432,
+    database: url.pathname.slice(1),
+    user: url.username,
+    password: decodeURIComponent(url.password),
+    ssl: { rejectUnauthorized: false }
+  });
+} else {
+  pool = new Pool({
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5432,
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME || 'studybuddy',
+    ssl: false
+  });
+}
 
 const initDatabase = async () => {
   try {

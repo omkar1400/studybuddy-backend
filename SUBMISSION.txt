@@ -13,19 +13,18 @@ SPRINT 1 - BACKEND DEVELOPMENT
 GitHub Repository URL:
 [PASTE YOUR GITHUB REPOSITORY URL HERE]
 
-Example: https://github.com/omkarsingh/studybuddy
-
 Live Deployment URL (Render):
-[PASTE YOUR RENDER DEPLOYMENT URL HERE]
+https://studybuddy-api-bbl7.onrender.com
 
-Example: https://studybuddy-api.onrender.com
+Documentation:
+StudyBuddy.postman_collection.json is included in the root of the repository.
 
 -------------------------------------------
 COMPLETED FEATURES
 -------------------------------------------
 
 ✅ Node.js and Express.js Setup
-✅ MySQL Database with 3 Tables (Users, Subjects, StudySessions)
+✅ PostgreSQL Database with 3 Tables (Users, Subjects, StudySessions)
 ✅ RESTful API Architecture
 
 Authentication:
@@ -34,16 +33,24 @@ Authentication:
 ✅ Password hashing with bcrypt
 ✅ JWT token generation and validation
 
-Subjects API:
+Users API (Full CRUD):
+✅ Get all users (GET /api/users)
+✅ Get user by ID (GET /api/users/:id)
+✅ Get own profile (GET /api/users/profile)
+✅ Update user (PUT /api/users/:id)
+✅ Delete user (DELETE /api/users/:id)
+
+Subjects API (Full CRUD):
 ✅ Get all subjects (GET /api/subjects)
 ✅ Get subject by ID (GET /api/subjects/:id)
 ✅ Create subject (POST /api/subjects)
 ✅ Update subject (PUT /api/subjects/:id)
 ✅ Delete subject (DELETE /api/subjects/:id)
 
-Study Sessions API:
+Study Sessions API (Full CRUD):
 ✅ Get all sessions (GET /api/sessions)
 ✅ Get session by ID (GET /api/sessions/:id)
+✅ Get sessions by status (GET /api/sessions/status/:status)
 ✅ Create session (POST /api/sessions)
 ✅ Update session (PUT /api/sessions/:id)
 ✅ Delete session (DELETE /api/sessions/:id)
@@ -52,9 +59,9 @@ Additional Features:
 ✅ Input validation
 ✅ Error handling
 ✅ CORS enabled for frontend integration
-✅ Authentication middleware
+✅ Authentication middleware on all private routes
 ✅ Database relationships (Foreign Keys)
-✅ Prepared for deployment
+✅ Deployed to Render (live)
 
 -------------------------------------------
 DATABASE SCHEMA
@@ -92,29 +99,29 @@ TECHNOLOGY STACK
 Backend:
 - Node.js v18+
 - Express.js 4.18
-- MySQL2 3.6
+- PostgreSQL (via pg driver 8.11)
 
 Security:
-- bcryptjs (password hashing)
-- jsonwebtoken (JWT authentication)
+- bcryptjs (password hashing with salt rounds)
+- jsonwebtoken (JWT authentication, 7d expiry)
 
 Other:
 - dotenv (environment variables)
 - cors (cross-origin support)
-- express-validator (input validation)
 
 -------------------------------------------
 HOW TO TEST
 -------------------------------------------
 
 1. Clone the repository
-2. Run: npm install
-3. Set up .env file with database credentials
-4. Run database/schema.sql to create tables
+2. cd backend && npm install
+3. Copy .env.example to .env and fill in credentials
+4. Run: npm run init-db  (creates all tables)
 5. Start server: npm start
 6. API will be available at http://localhost:5000
 
-See API_TESTING.md for detailed endpoint examples.
+Live API: https://studybuddy-api-bbl7.onrender.com
+See StudyBuddy.postman_collection.json for all endpoint examples.
 
 -------------------------------------------
 DEMO PREPARATION
@@ -133,31 +140,27 @@ FILES TO REVIEW
 -------------------------------------------
 
 Key Files:
-- server.js (main entry point)
-- config/db.js (database connection)
-- middleware/auth.js (JWT authentication)
-- controllers/ (business logic)
-- routes/ (API endpoints)
-- database/schema.sql (database schema)
+- backend/server.js (main entry point)
+- backend/config/db.js (PostgreSQL connection)
+- backend/config/initDb.js (database initializer — run with npm run init-db)
+- backend/middleware/auth.js (JWT authentication middleware)
+- backend/controllers/ (business logic — userController, subjectController, sessionController)
+- backend/routes/ (API endpoints — users, subjects, sessions)
 
 Documentation:
-- README.md (project overview)
-- SETUP.md (local setup instructions)
-- API_TESTING.md (API testing guide)
-- DEPLOYMENT.md (deployment guide)
+- backend/README.md (full project overview and API docs)
+- StudyBuddy.postman_collection.json (Postman collection — all routes with examples)
 
 -------------------------------------------
 NOTES
 -------------------------------------------
 
-[Add any additional notes or special instructions here]
-
-Example:
-- Database is deployed on Render MySQL
-- JWT_SECRET is securely configured in environment variables
-- Sample data is included in schema.sql for testing
-- All endpoints are tested and working
+- Database is hosted on Render PostgreSQL (cloud)
+- JWT_SECRET and DATABASE_URL are set as environment variables on Render
+- Passwords are hashed with bcryptjs (10 salt rounds) — never stored in plain text
+- All private routes are protected by JWT middleware
+- All endpoints tested and working on the live Render deployment
 
 -------------------------------------------
 
-Submitted on: [DATE]
+Submitted on: Feb 26, 2026

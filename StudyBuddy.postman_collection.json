@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "StudyBuddy API",
-    "description": "Complete API collection for StudyBuddy backend",
+    "description": "Complete API collection for StudyBuddy backend — PROG2500 Phase 1",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -13,10 +13,7 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
@@ -34,10 +31,7 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
@@ -51,19 +45,82 @@
           }
         },
         {
-          "name": "Get Profile",
+          "name": "Get My Profile",
           "request": {
             "method": "GET",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{TOKEN}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
               "raw": "{{BASE_URL}}/api/users/profile",
               "host": ["{{BASE_URL}}"],
               "path": ["api", "users", "profile"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users (CRUD)",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/users",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/users/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Updated\",\n  \"email\": \"john.updated@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/users/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "users", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/users/1",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "users", "1"]
             }
           }
         }
@@ -77,10 +134,7 @@
           "request": {
             "method": "GET",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{TOKEN}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
               "raw": "{{BASE_URL}}/api/subjects",
@@ -94,10 +148,7 @@
           "request": {
             "method": "GET",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{TOKEN}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
               "raw": "{{BASE_URL}}/api/subjects/1",
@@ -111,14 +162,8 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{TOKEN}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
@@ -136,14 +181,8 @@
           "request": {
             "method": "PUT",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{TOKEN}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
@@ -161,10 +200,7 @@
           "request": {
             "method": "DELETE",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{TOKEN}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
               "raw": "{{BASE_URL}}/api/subjects/1",
@@ -183,10 +219,7 @@
           "request": {
             "method": "GET",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{TOKEN}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
               "raw": "{{BASE_URL}}/api/sessions",
@@ -200,10 +233,7 @@
           "request": {
             "method": "GET",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{TOKEN}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
               "raw": "{{BASE_URL}}/api/sessions/1",
@@ -213,22 +243,30 @@
           }
         },
         {
+          "name": "Get Sessions by Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/api/sessions/status/pending",
+              "host": ["{{BASE_URL}}"],
+              "path": ["api", "sessions", "status", "pending"]
+            }
+          }
+        },
+        {
           "name": "Create Study Session",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{TOKEN}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"subject_id\": 1,\n  \"title\": \"Calculus Review\",\n  \"description\": \"Review derivatives and integrals\",\n  \"start_time\": \"2026-02-10 14:00:00\",\n  \"end_time\": \"2026-02-10 16:00:00\",\n  \"status\": \"pending\"\n}"
+              "raw": "{\n  \"subject_id\": 1,\n  \"title\": \"Calculus Review\",\n  \"description\": \"Review derivatives and integrals\",\n  \"start_time\": \"2026-03-10 14:00:00\",\n  \"end_time\": \"2026-03-10 16:00:00\",\n  \"status\": \"pending\"\n}"
             },
             "url": {
               "raw": "{{BASE_URL}}/api/sessions",
@@ -242,14 +280,8 @@
           "request": {
             "method": "PUT",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{TOKEN}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" },
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
@@ -267,10 +299,7 @@
           "request": {
             "method": "DELETE",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{TOKEN}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{TOKEN}}" }
             ],
             "url": {
               "raw": "{{BASE_URL}}/api/sessions/1",
@@ -285,7 +314,7 @@
   "variable": [
     {
       "key": "BASE_URL",
-      "value": "http://localhost:5000",
+      "value": "https://studybuddy-api-bbl7.onrender.com",
       "type": "string"
     },
     {
