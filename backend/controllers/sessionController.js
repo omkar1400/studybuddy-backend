@@ -1,11 +1,8 @@
 const pool = require('../config/db');
 
-// Allowed values for the `status` column (matches DB CHECK constraint)
 const VALID_STATUSES = ['pending', 'completed', 'cancelled'];
 
-// ─── GET /api/sessions ───────────────────────────────────────────────────────
-// Returns all study sessions belonging to the authenticated user.
-// JOINs with subjects so the subject name is included in each row.
+// get all sessions for the logged in user
 exports.getAllSessions = async (req, res) => {
   try {
     const sessions = await pool.query(
@@ -33,9 +30,7 @@ exports.getAllSessions = async (req, res) => {
   }
 };
 
-// ─── GET /api/sessions/:id ───────────────────────────────────────────────────
-// Returns a single session by its ID.
-// Also verifies that the session belongs to the requesting user (data isolation).
+// fetch a single session by id
 exports.getSessionById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -72,14 +67,11 @@ exports.getSessionById = async (req, res) => {
   }
 };
 
-// ─── POST /api/sessions ──────────────────────────────────────────────────────
-// Creates a new study session linked to an existing subject.
-// Validates required fields, subject ownership, and time logic.
+// create a new study session
 exports.createSession = async (req, res) => {
   try {
     const { subject_id, title, description, start_time, end_time, status } = req.body;
 
-    // Validate required fields
     if (!subject_id || !title || !start_time || !end_time) {
       return res.status(400).json({
         success: false,
@@ -87,7 +79,6 @@ exports.createSession = async (req, res) => {
       });
     }
 
-    // Validate status value if provided (must match DB CHECK constraint)
     if (status && !VALID_STATUSES.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -95,7 +86,6 @@ exports.createSession = async (req, res) => {
       });
     }
 
-    // Ensure the referenced subject exists and belongs to this user
     const subjectExists = await pool.query(
       'SELECT id FROM subjects WHERE id = $1 AND user_id = $2',
       [subject_id, req.userId]
@@ -108,7 +98,6 @@ exports.createSession = async (req, res) => {
       });
     }
 
-    // Business rule: end_time must be after start_time
     if (new Date(end_time) <= new Date(start_time)) {
       return res.status(400).json({
         success: false,
@@ -116,7 +105,6 @@ exports.createSession = async (req, res) => {
       });
     }
 
-    // Insert the new session; default status to 'pending' if not provided
     const newSession = await pool.query(
       `INSERT INTO study_sessions
          (user_id, subject_id, title, description, start_time, end_time, status)
@@ -139,16 +127,12 @@ exports.createSession = async (req, res) => {
   }
 };
 
-// ─── PUT /api/sessions/:id ───────────────────────────────────────────────────
-// Updates an existing study session.
-// Only the owner of the session may update it.
-// All fields are optional — unset fields fall back to current DB values.
+// update a study session
 exports.updateSession = async (req, res) => {
   try {
     const { id } = req.params;
     const { subject_id, title, description, start_time, end_time, status } = req.body;
 
-    // Confirm the session exists and belongs to the authenticated user
     const sessionExists = await pool.query(
       'SELECT * FROM study_sessions WHERE id = $1 AND user_id = $2',
       [id, req.userId]
@@ -161,7 +145,6 @@ exports.updateSession = async (req, res) => {
       });
     }
 
-    // Validate the new status value if one was supplied
     if (status && !VALID_STATUSES.includes(status)) {
       return res.status(400).json({
         success: false,
@@ -169,7 +152,6 @@ exports.updateSession = async (req, res) => {
       });
     }
 
-    // If subject_id is changing, verify the new subject exists and belongs to this user
     if (subject_id && subject_id !== sessionExists.rows[0].subject_id) {
       const subjectExists = await pool.query(
         'SELECT id FROM subjects WHERE id = $1 AND user_id = $2',
@@ -184,9 +166,8 @@ exports.updateSession = async (req, res) => {
       }
     }
 
-    // Merge incoming times with existing values before validating the range
     const newStartTime = start_time || sessionExists.rows[0].start_time;
-    const newEndTime   = end_time   || sessionExists.rows[0].end_time;
+    const newEndTime = end_time || sessionExists.rows[0].end_time;
 
     if (new Date(newEndTime) <= new Date(newStartTime)) {
       return res.status(400).json({
@@ -233,14 +214,11 @@ exports.updateSession = async (req, res) => {
   }
 };
 
-// ─── DELETE /api/sessions/:id ────────────────────────────────────────────────
-// Permanently removes a study session.
-// Only the owner may delete their own session.
+// delete a study session
 exports.deleteSession = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Confirm the session exists and belongs to the authenticated user
     const sessionExists = await pool.query(
       'SELECT id FROM study_sessions WHERE id = $1 AND user_id = $2',
       [id, req.userId]
@@ -253,7 +231,6 @@ exports.deleteSession = async (req, res) => {
       });
     }
 
-    // Hard-delete the row from the database
     await pool.query(
       'DELETE FROM study_sessions WHERE id = $1 AND user_id = $2',
       [id, req.userId]
@@ -272,14 +249,11 @@ exports.deleteSession = async (req, res) => {
   }
 };
 
-// ─── GET /api/sessions/status/:status ───────────────────────────────────────
-// Filters the authenticated user's sessions by status value.
-// Valid statuses: pending | completed | cancelled
+// get sessions filtered by status
 exports.getSessionsByStatus = async (req, res) => {
   try {
     const { status } = req.params;
 
-    // Reject unknown status values immediately (prevents empty-result confusion)
     if (!VALID_STATUSES.includes(status)) {
       return res.status(400).json({
         success: false,

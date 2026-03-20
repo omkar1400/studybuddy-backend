@@ -2,117 +2,119 @@ const pool = require('../config/db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Register new user
+// custom validation utility
+const validateUserInput = (name, email, password) => {
+  const errors = [];
+  if (!name || name.trim().length < 2) errors.push('Name must be at least 2 characters');
+  if (!email || !email.includes('@')) errors.push('Valid email is required');
+  if (!password || password.length < 6) errors.push('Password must be at least 6 characters');
+  if (name && name.length > 100) errors.push('Name is too long');
+  return errors;
+};
+
+// user registration with enhanced validation
 exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
-    // Validate input
-    if (!name || !email || !password) {
+    
+    const validationErrors = validateUserInput(name, email, password);
+    if (validationErrors.length > 0) {
       return res.status(400).json({ 
         success: false,
-        message: 'Please provide all required fields' 
+        errors: validationErrors
       });
     }
 
-    // Check if user already exists
-    const userExists = await pool.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
+    const emailCheckResult = await pool.query(
+      'SELECT id FROM users WHERE LOWER(email) = LOWER($1)',
+      [email.trim()]
     );
 
-    if (userExists.rows.length > 0) {
-      return res.status(400).json({ 
+    if (emailCheckResult.rows.length > 0) {
+      return res.status(409).json({ 
         success: false,
-        message: 'User already exists with this email' 
+        message: 'This email is already registered in our system'
       });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
     const newUser = await pool.query(
       'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id, name, email, created_at',
-      [name, email, hashedPassword]
+      [name.trim(), email.toLowerCase(), hashedPassword]
     );
 
-    // Generate JWT token
     const token = jwt.sign(
-      { id: newUser.rows[0].id },
+      { userId: newUser.rows[0].id, email: newUser.rows[0].email },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRE || '7d' }
     );
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'Account created successfully. Welcome to StudyBuddy!',
       data: {
         user: newUser.rows[0],
         token
       }
     });
   } catch (error) {
-    console.error('Register error:', error);
+    console.error('Registration error:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Server error during registration' 
+      message: 'Unable to complete registration. Please try again later.' 
     });
   }
 };
 
-// Login user
+// user login with enhanced security
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
-    if (!email || !password) {
+    if (!email?.trim() || !password) {
       return res.status(400).json({ 
         success: false,
-        message: 'Please provide email and password' 
+        message: 'Email and password are required'
       });
     }
 
-    // Check if user exists
-    const user = await pool.query(
-      'SELECT * FROM users WHERE email = $1',
-      [email]
+    const userQuery = await pool.query(
+      'SELECT * FROM users WHERE LOWER(email) = LOWER($1)',
+      [email.trim()]
     );
 
-    if (user.rows.length === 0) {
+    if (userQuery.rows.length === 0) {
       return res.status(401).json({ 
         success: false,
-        message: 'Invalid credentials' 
+        message: 'Email or password is incorrect'
       });
     }
 
-    // Check password
-    const isPasswordValid = await bcrypt.compare(password, user.rows[0].password);
+    const user = userQuery.rows[0];
+    const passwordMatches = await bcrypt.compare(password, user.password);
 
-    if (!isPasswordValid) {
+    if (!passwordMatches) {
       return res.status(401).json({ 
         success: false,
-        message: 'Invalid credentials' 
+        message: 'Email or password is incorrect'
       });
     }
 
-    // Generate JWT token
     const token = jwt.sign(
-      { id: user.rows[0].id },
+      { userId: user.id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRE || '7d' }
     );
 
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user.rows[0];
+    const { password: _, ...userData } = user;
+    userData.lastLogin = new Date().toISOString();
 
-    res.json({
+    res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message: 'Successfully logged in',
       data: {
-        user: userWithoutPassword,
+        user: userData,
         token
       }
     });
@@ -120,7 +122,7 @@ exports.login = async (req, res) => {
     console.error('Login error:', error);
     res.status(500).json({ 
       success: false,
-      message: 'Server error during login' 
+      message: 'Authentication service temporarily unavailable' 
     });
   }
 };

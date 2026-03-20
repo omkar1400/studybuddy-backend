@@ -1,27 +1,22 @@
 const express = require('express');
-const cors    = require('cors');
-const dotenv  = require('dotenv');
+const cors = require('cors');
+const dotenv = require('dotenv');
 
-// ─── Environment ────────────────────────────────────────────────────────────
-// Must be called before any process.env access
 dotenv.config();
 
-// ─── Route Imports ──────────────────────────────────────────────────────────
-const userRoutes    = require('./routes/users');
+const userRoutes = require('./routes/users');
 const subjectRoutes = require('./routes/subjects');
 const sessionRoutes = require('./routes/sessions');
 
-// ─── App Initialisation ─────────────────────────────────────────────────────
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ─── Global Middleware ──────────────────────────────────────────────────────
-app.use(cors());                               // Enable Cross-Origin Resource Sharing
-app.use(express.json());                       // Parse JSON request bodies
-app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+// middleware setup
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// ─── Health-check / Root Route ──────────────────────────────────────────────
-// Confirms the API is online and lists available base paths
+// root endpoint
 app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to StudyBuddy API',
@@ -34,14 +29,12 @@ app.get('/', (req, res) => {
   });
 });
 
-// ─── API Routes ─────────────────────────────────────────────────────────────
-app.use('/api/users',    userRoutes);    // User auth + CRUD
-app.use('/api/subjects', subjectRoutes); // Subject CRUD (JWT-protected)
-app.use('/api/sessions', sessionRoutes); // Study-session CRUD (JWT-protected)
+// API routes
+app.use('/api/users', userRoutes);
+app.use('/api/subjects', subjectRoutes);
+app.use('/api/sessions', sessionRoutes);
 
-// ─── 404 Handler ────────────────────────────────────────────────────────────
-// Catches any request that did not match a registered route above.
-// Must come BEFORE the error handler so unmatched routes return 404, not 500.
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -49,9 +42,7 @@ app.use((req, res) => {
   });
 });
 
-// ─── Global Error Handler ───────────────────────────────────────────────────
-// Must have exactly 4 parameters so Express identifies it as an error handler.
-// Catches errors forwarded via next(err) from any route or middleware.
+// error handler
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error('Unhandled error:', err.stack);
@@ -61,7 +52,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ─── Start Server ───────────────────────────────────────────────────────────
+// start server
 app.listen(PORT, () => {
   console.log(`🚀 StudyBuddy API running on http://localhost:${PORT}`);
   console.log(`📚 Environment: ${process.env.NODE_ENV || 'development'}`);

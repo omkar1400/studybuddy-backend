@@ -1,8 +1,6 @@
 const pool = require('../config/db');
 
-// ─── GET /api/subjects ───────────────────────────────────────────────────────
-// Returns all subjects that belong to the authenticated user.
-// Each user only ever sees their own subjects (data isolation via user_id).
+// get all subjects for the user
 exports.getAllSubjects = async (req, res) => {
   try {
     const subjects = await pool.query(
@@ -24,9 +22,7 @@ exports.getAllSubjects = async (req, res) => {
   }
 };
 
-// ─── GET /api/subjects/:id ───────────────────────────────────────────────────
-// Returns a single subject by its ID.
-// The user_id check ensures users cannot read other users' subjects.
+// get a single subject by id
 exports.getSubjectById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -57,14 +53,11 @@ exports.getSubjectById = async (req, res) => {
   }
 };
 
-// ─── POST /api/subjects ──────────────────────────────────────────────────────
-// Creates a new subject for the authenticated user.
-// `name` is required; `description` is optional.
+// create a new subject
 exports.createSubject = async (req, res) => {
   try {
     const { name, description } = req.body;
 
-    // Validate required field
     if (!name) {
       return res.status(400).json({
         success: false,
@@ -72,7 +65,6 @@ exports.createSubject = async (req, res) => {
       });
     }
 
-    // Insert the new subject and return the full row
     const newSubject = await pool.query(
       'INSERT INTO subjects (user_id, name, description) VALUES ($1, $2, $3) RETURNING *',
       [req.userId, name, description || null]
@@ -92,15 +84,12 @@ exports.createSubject = async (req, res) => {
   }
 };
 
-// ─── PUT /api/subjects/:id ───────────────────────────────────────────────────
-// Updates an existing subject.
-// Only the owner can update; unset fields fall back to current DB values.
+// update a subject
 exports.updateSubject = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description } = req.body;
 
-    // Confirm the subject exists and belongs to the authenticated user
     const subjectExists = await pool.query(
       'SELECT * FROM subjects WHERE id = $1 AND user_id = $2',
       [id, req.userId]
@@ -113,8 +102,6 @@ exports.updateSubject = async (req, res) => {
       });
     }
 
-    // Use parameterised query to prevent SQL injection.
-    // Fall back to the current DB value for any field the caller omitted.
     const updatedSubject = await pool.query(
       `UPDATE subjects
        SET name        = $1,
@@ -144,9 +131,7 @@ exports.updateSubject = async (req, res) => {
   }
 };
 
-// ─── DELETE /api/subjects/:id ────────────────────────────────────────────────
-// Permanently removes a subject.
-// Cascades to all study_sessions linked to this subject (DB ON DELETE CASCADE).
+// delete a subject
 exports.deleteSubject = async (req, res) => {
   try {
     const { id } = req.params;
