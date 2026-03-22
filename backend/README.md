@@ -570,28 +570,6 @@ backend/
 
 ---
 
-## 👨‍💻 Developer Notes
-
-### Sprint 1 Requirements Met ✅
-
-- ✅ Node.js and Express setup
-- ✅ PostgreSQL database with 3 tables
-- ✅ RESTful API endpoints (CRUD)
-- ✅ Authentication (JWT)
-- ✅ Data relationships (1:M)
-- ✅ Ready for deployment to Render
-- ✅ Proper error handling
-- ✅ API documentation
-
-### Next Steps (Sprint 2 & 3)
-
-- [ ] Build React frontend
-- [ ] Connect frontend to backend API
-- [ ] Deploy frontend to Render/Netlify
-- [ ] Add advanced features (filtering, sorting, etc.)
-
----
-
 ## 📞 Support
 
 For questions or issues:
@@ -599,5 +577,3 @@ For questions or issues:
 - Student ID: 8781929
 
 ---
-
-**Built with ❤️ for PROG2500 - Full Stack Development**
