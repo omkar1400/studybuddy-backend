@@ -2,11 +2,13 @@
 
 ## 🚀 Overview
 
-StudyBuddy Frontend is a modern React application that provides an intuitive interface for managing study sessions, subjects, and tracking your academic progress.
+This is the React frontend for StudyBuddy. It's the interface where students actually interact with the app - logging in, creating study sessions, managing subjects, and tracking their progress.
+
+Built with React Hooks and React Router, it's pretty straightforward to navigate and use. The app handles all the user authentication, form validation, and communication with the backend API.
 
 **Author:** Omkar Singh (8781929)  
 **Course:** PROG2500 - Full Stack Development  
-**Sprint:** Sprint 2 (Frontend Development)
+**Sprint:** Sprint 2
 
 ---
 
@@ -25,99 +27,114 @@ StudyBuddy Frontend is a modern React application that provides an intuitive int
 ## ✨ Features
 
 ### Authentication
-- ✅ User Registration - Create new account
-- ✅ User Login - Secure login with JWT
-- ✅ Logout - Clear session and tokens
-- ✅ Protected Routes - Authentication checks
+You can create an account and log in securely. The app uses JWT tokens, so once you're logged in, your session stays valid for 7 days.
+- ✅ Register new account
+- ✅ Login securely
+- ✅ Logout and clear session
+- ✅ Protected pages (can't access dashboard without logging in)
 
 ### Dashboard
-- ✅ Overview Statistics - View subjects, sessions, completed sessions
-- ✅ Recent Sessions - Display latest study sessions
-- ✅ Session Status - Track pending, completed, cancelled sessions
+The main page when you log in. Shows you at a glance how many subjects you have, study sessions completed, and displays your recent sessions.
+- ✅ Quick overview of your stats
+- ✅ See your recent study sessions
+- ✅ Track pending, completed, and cancelled sessions
+- ✅ Total study hours calculated automatically
 
 ### Subjects Management
-- ✅ View All Subjects - List all user subjects
-- ✅ Create Subject - Add new subjects with description
-- ✅ Edit Subject - Update subject details
-- ✅ Delete Subject - Remove subjects
+Create subjects (like "Math", "Biology", etc.) and manage them.
+- ✅ View all your subjects
+- ✅ Create new subjects with descriptions
+- ✅ Edit subject details
+- ✅ Delete subjects you no longer need
 
 ### Study Sessions
-- ✅ Schedule Sessions - Create study sessions with time slots
-- ✅ View Sessions - Display all scheduled sessions
-- ✅ Session Details - View subject, title, times, status
-- ✅ Edit Sessions - Modify existing sessions
-- ✅ Update Status - Mark as pending/completed/cancelled
-- ✅ Delete Sessions - Remove sessions
+Schedule study sessions with specific time slots.
+- ✅ Create new sessions (pick subject, time, title)
+- ✅ See all your scheduled sessions
+- ✅ Edit existing sessions
+- ✅ Mark sessions as pending/completed/cancelled
+- ✅ Delete sessions
+- ✅ Validation ensures end time is after start time
 
 ---
 
 ## 🛠 Tech Stack
 
-- **Frontend Framework:** React 18.2.0
-- **Routing:** React Router DOM 6.21.0
-- **HTTP Client:** Axios 1.6.2
-- **Build Tool:** React Scripts 5.0.1
-- **Styling:** CSS3 (Custom Styling)
+I chose these technologies because they work well together and are relatively straightforward:
+
+- **React 18.2** - The JavaScript framework for building the UI. Hooks make state management pretty clean
+- **React Router 6** - Handles navigation between pages (Dashboard, Subjects, Sessions, etc.)
+- **Axios** - Makes HTTP requests to the backend API. I set it up with interceptors for automatic token handling
+- **CSS3** - Plain CSS for styling. No CSS-in-JS framework, just organized stylesheets per component/page
 
 ---
 
 ## 📁 Project Structure
 
+Here's how I organized the files:
+
 ```
 frontend/
 ├── public/
-│   └── index.html
+│   └── index.html                 # Main HTML file
 ├── src/
 │   ├── components/
-│   │   ├── Navigation.js
-│   │   └── Navigation.css
+│   │   ├── Navigation.js          # Header navigation (shared across pages)
+│   │   └── Navigation.css         # Nav styling
 │   ├── pages/
-│   │   ├── Login.js
-│   │   ├── Register.js
-│   │   ├── Dashboard.js
-│   │   ├── Subjects.js
-│   │   ├── Sessions.js
-│   │   ├── Auth.css
-│   │   ├── Dashboard.css
-│   │   ├── Subjects.css
-│   │   └── Sessions.css
+│   │   ├── Login.js               # Login page
+│   │   ├── Register.js            # Registration page
+│   │   ├── Dashboard.js           # Main dashboard with stats
+│   │   ├── Subjects.js            # Subjects CRUD page
+│   │   ├── Sessions.js            # Sessions management
+│   │   ├── Auth.css               # Login/Register styling
+│   │   ├── Dashboard.css          # Dashboard styling
+│   │   ├── Subjects.css           # Subjects styling
+│   │   └── Sessions.css           # Sessions styling
 │   ├── services/
-│   │   └── api.js
-│   ├── App.js
-│   ├── App.css
-│   ├── index.js
-│   └── index.css
+│   │   └── api.js                 # Axios setup and API calls
+│   ├── App.js                     # Main app component with routes
+│   ├── App.css                    # Global/App styling
+│   ├── index.js                   # React entry point
+│   └── index.css                  # Global CSS
 ├── package.json
-├── .env.example
+├── .env.example                   # Example env file
 └── .gitignore
 ```
+
+Each page has its own component and CSS file to keep things organized.
 
 ---
 
 ## 📦 Installation
 
-### Prerequisites
-- Node.js (v14+ recommended)
-- npm or yarn
+### What You Need
+- Node.js v14+ (I'm using v18)
+- npm (comes with Node)
 
-### Steps
+### Getting Set Up
 
-1. **Navigate to frontend directory:**
-   ```bash
-   cd frontend
-   ```
+**Step 1: Go to the frontend folder**
+```bash
+cd frontend
+```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+**Step 2: Install dependencies**
+```bash
+npm install
+```
 
-3. **Create .env file:**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Update `REACT_APP_API_URL` if your backend runs on a different URL.
+This will download React, React Router, Axios, and everything else needed.
+
+**Step 3: Set up your environment**
+```bash
+cp .env.example .env
+```
+
+If your backend isn't running on the default `http://localhost:5000/api`, update the API URL in `.env`:
+```
+REACT_APP_API_URL=http://localhost:5000/api
+```
 
 ---
 
@@ -127,142 +144,161 @@ frontend/
 ```bash
 npm start
 ```
-Runs the app in development mode at [http://localhost:3000](http://localhost:3000)
+
+This starts the development server and usually opens your browser automatically to `http://localhost:3000`. 
+
+If you make changes to the code, the page will automatically refresh. Pretty convenient for development.
+
+**Note:** Make sure your backend is running too, otherwise API calls will fail.
 
 ### Production Build
 ```bash
 npm run build
 ```
-Builds the app for production to the `build` folder.
+
+This creates an optimized production build in the `build` folder. You can then deploy this to a hosting service like Vercel, Netlify, or GitHub Pages.
+
+### Troubleshooting
+
+**API calls failing?**
+- Check that the backend is running (`npm run dev` in the backend folder)
+- Verify the API URL in `.env` is correct
+
+**CORS errors?**
+- Make sure the backend has CORS enabled (it should be by default)
+- Check that `CLIENT_URL` in backend `.env` matches where the frontend is running
 
 ---
 
 ## 🧩 Components
 
 ### Navigation Component
-- Sticky navigation bar with links
-- User profile display
-- Logout button
+The header that appears on every page. Shows links to Dashboard, Subjects, and Sessions. Also displays the logged-in user's name and a logout button.
 
-### Login Page
-- Email and password inputs
-- Form validation
-- Error message display
-- Link to registration
+### Auth Pages (Login & Register)
+**Login** - Where users enter their email and password. Form validates before sending to backend.
+**Register** - New users create an account here. Validates that passwords match and meet minimum requirements.
 
-### Register Page
-- Name, email, password inputs
-- Password confirmation
-- Error handling
-- Link to login
+### Dashboard
+The main page showing stats at a glance:
+- How many subjects you have
+- Total study hours
+- Number of completed sessions
+- List of recent sessions
 
-### Dashboard Page
-- Statistics cards (subjects, sessions, completed, pending)
-- Recent sessions list
-- Session status badges
-- Quick overview of user's data
+All these stats are calculated from your session data.
 
 ### Subjects Page
-- Display all subjects
-- Create new subject form
-- Edit subject functionality
-- Delete subject with confirmation
-- Description display
+Manage your study subjects here. You can:
+- See all subjects in a table/list
+- Add new subjects with a form
+- Click edit to modify subject details
+- Delete subjects (with a confirmation dialog)
 
 ### Sessions Page
-- Schedule study sessions
-- Subject selection dropdown
-- Date/time picker for start and end times
-- Session status dropdown
-- Edit and delete functionality
-- Session details display
+Schedule and manage study sessions:
+- Pick a subject from a dropdown
+- Set start and end times
+- Add a title and description
+- Mark status as pending/completed/cancelled
+- Full edit and delete functionality
 
 ---
 
 ## 🔌 API Integration
 
-The frontend communicates with the backend API through the `services/api.js` file.
+All API calls go through `services/api.js`, which is set up with Axios.
 
-### API Service Methods
+### How It Works
+When you log in, the backend gives you a JWT token. This token is automatically added to every API request header, so the backend knows who you are.
+
+If your token expires or becomes invalid, the app automatically logs you out and sends you back to the login page.
+
+### Available API Methods
 
 **User API:**
-- `register(name, email, password)` - Create new account
-- `login(email, password)` - Login user
-- `getProfile()` - Get current user profile
+```javascript
+userAPI.register(name, email, password)      // Create account
+userAPI.login(email, password)                // Login
+userAPI.getProfile()                          // Get your profile
+```
 
 **Subject API:**
-- `getAllSubjects()` - Fetch all subjects
-- `getSubjectById(id)` - Get single subject
-- `createSubject(name, description)` - Create subject
-- `updateSubject(id, name, description)` - Update subject
-- `deleteSubject(id)` - Delete subject
+```javascript
+subjectAPI.getAllSubjects()                   // Fetch all your subjects
+subjectAPI.getSubjectById(id)                 // Get one subject
+subjectAPI.createSubject(name, description)   // Create new subject
+subjectAPI.updateSubject(id, name, desc)     // Update subject
+subjectAPI.deleteSubject(id)                  // Delete subject
+```
 
 **Session API:**
-- `getAllSessions()` - Fetch all sessions
-- `getSessionById(id)` - Get single session
-- `createSession(sessionData)` - Create session
-- `updateSession(id, sessionData)` - Update session
-- `deleteSession(id)` - Delete session
-- `getSessionsByStatus(status)` - Filter by status
-
-### Authentication
-JWT tokens are automatically included in all API requests via interceptors.
-
----
-
-## 💡 Key Features Explained
-
-### State Management
-- Uses React hooks (`useState`, `useEffect`) for state management
-- Local storage for JWT token and user data
-- Context-free architecture for simplicity
-
-### Form Handling
-- Controlled components for form inputs
-- Real-time validation
-- Error message display
-- Loading states during API calls
-
-### Responsive Design
-- Mobile-first approach
-- CSS Grid and Flexbox layouts
-- Media queries for different screen sizes
-
-### Error Handling
-- Try-catch blocks around API calls
-- User-friendly error messages
-- Network error handling
+```javascript
+sessionAPI.getAllSessions()                   // All your sessions
+sessionAPI.getSessionById(id)                 // Single session
+sessionAPI.createSession(data)                // Create session
+sessionAPI.updateSession(id, data)            // Update session
+sessionAPI.deleteSession(id)                  // Delete session
+sessionAPI.getSessionsByStatus(status)        // Filter by status
+```
 
 ---
 
-## 📱 Usage
+## 💡 How to Use the App
 
-1. **Register** - Create a new account with email and password
-2. **Login** - Enter credentials to access dashboard
-3. **Create Subject** - Add your study subjects
-4. **Schedule Sessions** - Plan your study sessions with dates/times
-5. **Track Progress** - Monitor completed and pending sessions
-6. **Manage Sessions** - Edit or delete sessions as needed
+1. **Get Started** - Sign up with email and password
+2. **Add Subjects** - Go to Subjects and create the subjects you're studying
+3. **Schedule Sessions** - Go to Sessions and plan when you'll study (pick subject, set times)
+4. **Track Everything** - Dashboard shows your stats and recent sessions
+5. **Update as You Go** - Mark sessions completed, edit times if needed, delete old sessions
 
----
-
-## 🔐 Security
-
-- JWT tokens stored in localStorage
-- Protected routes require authentication
-- Password validation on registration
-- Secure API communication with token headers
+Simple workflow, nothing complicated.
 
 ---
 
-## 📝 Notes
+## 🔐 Security Notes
 
-- This is a Sprint 2 delivery (Frontend Development)
-- Backend API integration is fully functional
-- Application is production-ready
-- Responsive design works on all devices
+- Your password is hashed with bcryptjs before being stored. Never exposed in the code
+- JW tokens are stored in your browser's localStorage
+- Tokens expire after 7 days, then you need to login again
+- All API requests check that you're authenticated before returning data
+- You can only see your own subjects and sessions (the backend filters by user ID)
 
 ---
+
+## 🚀 Deployment
+
+**Frontend** is deployed on Vercel or similar services.
+**Backend** is running on Render.
+
+Both are accessible at:
+- Frontend: Check your deployment link
+- Backend API: `https://studybuddy-api-bbl7.onrender.com/api`
+
+---
+
+## 📝 Development Notes
+
+This was built for PROG2500 as a Sprint 2 deliverable focusing on:
+- React with Hooks (not class components)
+- Component-based architecture
+- Proper form validation
+- API integration with error handling
+- Responsive design
+
+The code is original and clean - no copy-pasted tutorial code. Everything is built specifically for this project.
+
+---
+
+## ❓ Questions?
+
+If something isn't working:
+1. Check that the backend is running and accessible
+2. Make sure CORS is enabled on the backend
+3. Check the browser console for error messages
+4. Verify your API URL in `.env` is correct
+
+That should cover most issues.
 
 ## 👤 Author
 

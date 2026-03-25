@@ -2,10 +2,13 @@
 
 ## 🚀 Overview
 
-StudyBuddy is a RESTful API built with Node.js, Express, and PostgreSQL that helps students plan, organize, and track their study sessions efficiently.
+This is the backend API for StudyBuddy, a study planner app I built for managing study sessions and subjects. It's built with Node.js, Express, and PostgreSQL - pretty straightforward stack that gets the job done.
+
+The API handles user registration, authentication, and all the CRUD operations for managing subjects and study sessions. Everything is protected by JWT authentication to keep user data safe.
 
 **Author:** Omkar Singh (8781929)  
-**Course:** PROG2500 - Full Stack Development
+**Course:** PROG2500 - Full Stack Development  
+**Status:** Deployed on Render
 
 ---
 
@@ -21,19 +24,25 @@ StudyBuddy is a RESTful API built with Node.js, Express, and PostgreSQL that hel
 
 ## 🛠 Tech Stack
 
-- **Runtime:** Node.js (v18+)
-- **Framework:** Express.js
-- **Database:** PostgreSQL
-- **Authentication:** JWT (JSON Web Tokens)
-- **Password Hashing:** bcryptjs
-- **Environment Variables:** dotenv
-- **CORS:** Enabled for cross-origin requests
+I went with these tools because they're reliable and easy to work with:
+
+- **Node.js** (v18+) - JavaScript runtime, works great for server-side code
+- **Express.js** - Simple and flexible web framework. I use it to handle all the routes and middleware
+- **PostgreSQL** - Relational database. Good for structured data like user accounts and subject relationships
+- **JWT** - For authentication. User logs in once, gets a token, and uses it to access protected routes
+- **bcryptjs** - Password hashing. Makes sure passwords are never stored in plaintext
+- **dotenv** - For managing environment variables so secrets don't end up in version control
+- **CORS** - Enabled so the frontend can talk to the backend without issues
 
 ---
 
 ## 🗄 Database Schema
 
+I designed the database with three main tables. Here's how they work together:
+
 ### Users Table
+Stores account information. Email is unique so no duplicate accounts.
+
 ```sql
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
@@ -46,6 +55,8 @@ CREATE TABLE users (
 ```
 
 ### Subjects Table
+Each student can have multiple subjects (Math, History, etc.). Links back to the user.
+
 ```sql
 CREATE TABLE subjects (
   id SERIAL PRIMARY KEY,
@@ -59,6 +70,8 @@ CREATE TABLE subjects (
 ```
 
 ### Study Sessions Table
+Where I track actual study sessions - when they started, ended, and what status they're in.
+
 ```sql
 CREATE TABLE study_sessions (
   id SERIAL PRIMARY KEY,
@@ -76,160 +89,263 @@ CREATE TABLE study_sessions (
 );
 ```
 
-**Relationships:**
-- 1 User → Many Subjects (1:M)
-- 1 User → Many Study Sessions (1:M)
-- 1 Subject → Many Study Sessions (1:M)
+**How they connect:**
+- One user can have many subjects
+- One user can have many study sessions  
+- One subject can have many study sessions
+- When you delete a user, everything related to them gets deleted too (CASCADE)
 
 ---
 
 ## 🔧 Installation
 
-### Prerequisites
-- Node.js (v18 or higher)
-- PostgreSQL (v12 or higher)
-- npm or yarn
+### What You'll Need
+- Node.js v18+ (I'm using v18.17)
+- PostgreSQL v12+ (for the database)
+- npm (comes with Node)
 
-### Local Setup
+If you don't have these installed, grab them from their official websites.
 
-1. **Clone the repository**
+### Getting It Set Up Locally
+
+**Step 1: Navigate to the backend folder**
 ```bash
 cd backend
 ```
 
-2. **Install dependencies**
+**Step 2: Install all the npm packages**
 ```bash
 npm install
 ```
 
-3. **Set up environment variables**
+**Step 3: Set up your environment file**
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and configure:
+Then open `.env` in your editor and fill in your details:
 ```env
 PORT=5000
 NODE_ENV=development
 
-# For local PostgreSQL
+# Local database (if you have PostgreSQL running locally)
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
-DB_PASSWORD=your_password
+DB_PASSWORD=your_password_here
 DB_NAME=studybuddy
 
-# For Render (cloud deployment)
+# Or use Render's DATABASE_URL if deploying there
 # DATABASE_URL=postgresql://user:password@host:port/database
 
-JWT_SECRET=your_secret_key_here
+JWT_SECRET=make_this_something_random_and_secure
 JWT_EXPIRE=7d
 
 CLIENT_URL=http://localhost:3000
 ```
 
-4. **Create the database**
+**Step 4: Create your database**
+Open a terminal and run PostgreSQL:
 ```bash
-# Using psql
 psql -U postgres
 CREATE DATABASE studybuddy;
 \q
 ```
 
-5. **Initialize database tables**
+**Step 5: Create the tables**
 ```bash
 npm run init-db
 ```
 
-6. **Start the server**
+This will create all three tables and set up the schema.
+
+**Step 6: Start the server**
 ```bash
-# Development mode (with auto-restart)
+# For development (auto-restarts when you change files)
 npm run dev
 
-# Production mode
+# For production
 npm start
 ```
 
-Server will run at `http://localhost:5000`
+The API should now be running at `http://localhost:5000`
 
 ---
 
 ## 📡 API Endpoints
 
-### Base URL
+All API endpoints start with:
 ```
 http://localhost:5000/api
 ```
 
-### Authentication
+### User Endpoints (Authentication)
 
-#### Register New User
+**Register a new user**
 ```http
 POST /api/users/register
 Content-Type: application/json
 
 {
-  "name": "Johnso",
+  "name": "John Doe",
   "email": "john@example.com",
-  "password": "securePassword123"
+  "password": "password123"
 }
 ```
 
-**Response (201):**
-```json
-{
-  "success": true,
-  "message": "User registered successfully",
-  "data": {
-    "user": {
-      "id": 1,
-      "name": "Johnso",
-      "email": "john@example.com",
-      "created_at": "2026-02-04T10:00:00.000Z"
-    },
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
+Returns a user object and JWT token. You'll use this token for subsequent requests.
 
-#### Login
+**Login**
 ```http
 POST /api/users/login
 Content-Type: application/json
 
 {
   "email": "john@example.com",
-  "password": "securePassword123"
+  "password": "password123"
 }
 ```
 
-**Response (200):**
-```json
-{
-  "success": true,
-  "message": "Login successful",
-  "data": {
-    "user": {
-      "id": 1,
-      "name": "Johnso",
-      "email": "john@example.com"
-    },
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-  }
-}
-```
+Returns your user info and a new JWT token.
 
-#### Get User Profile
+**Get your profile**
 ```http
 GET /api/users/profile
-Authorization: Bearer <token>
+Authorization: Bearer YOUR_JWT_TOKEN
 ```
 
-**Response (200):**
+Need to be logged in (include the Bearer token).
+
+### Subject Endpoints
+
+**Get all your subjects**
+```http
+GET /api/subjects
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Get one subject by ID**
+```http
+GET /api/subjects/:id
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Create a new subject**
+```http
+POST /api/subjects
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "name": "Mathematics",
+  "description": "Calculus and Algebra"
+}
+```
+
+**Update a subject**
+```http
+PUT /api/subjects/:id
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "name": "Advanced Math",
+  "description": "Updated description"
+}
+```
+
+**Delete a subject**
+```http
+DELETE /api/subjects/:id
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+### Study Sessions Endpoints
+
+**Get all your sessions**
+```http
+GET /api/sessions
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Get sessions by status (pending/completed/cancelled)**
+```http
+GET /api/sessions/status/completed
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Get one session**
+```http
+GET /api/sessions/:id
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Create a new session**
+```http
+POST /api/sessions
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "subject_id": 1,
+  "title": "Chapter Review",
+  "description": "Review chapters 5-7",
+  "start_time": "2026-03-25T10:00:00Z",
+  "end_time": "2026-03-25T12:00:00Z",
+  "status": "pending"
+}
+```
+
+**Update a session**
+```http
+PUT /api/sessions/:id
+Authorization: Bearer YOUR_JWT_TOKEN
+Content-Type: application/json
+
+{
+  "status": "completed"
+}
+```
+
+Minimum fields required - only send what you're updating.
+
+**Delete a session**
+```http
+DELETE /api/sessions/:id
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+---
+
+## 💡 Error Handling
+
+If something goes wrong, you'll get back a JSON response with `success: false` and an error message. For example:
+
 ```json
 {
-  "success": true,
-  "data": {
+  "success": false,
+  "message": "Email or password is incorrect"
+}
+```
+
+HTTP status codes:
+- **200** - Success
+- **201** - Created successfully
+- **400** - Bad request (validation error)
+- **401** - Unauthorized (need to login)
+- **404** - Not found
+- **500** - Server error
+
+---
+
+## 🌐 Deployment
+
+The API is deployed on Render.com. The live URL is:
+```
+https://studybuddy-api-bbl7.onrender.com/api
+```
+
+You can make requests to this just like the local version - use the same endpoints.
     "id": 1,
     "name": "Johnso",
     "email": "john@example.com",
