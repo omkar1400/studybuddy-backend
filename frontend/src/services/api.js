@@ -8,98 +8,106 @@ const api = axios.create({
   timeout: 10000
 });
 
-// request interceptor with custom logging
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    console.log(`[StudyBuddy API] ${config.method.toUpperCase()} ${config.url}`);
     return config;
   },
-  (error) => {
-    console.error('[StudyBuddy API] Request failed:', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// response interceptor with custom error handling
 api.interceptors.response.use(
-  (response) => {
-    console.log(`[StudyBuddy API] Response OK: ${response.status}`);
-    return response;
-  },
+  (response) => response,
   (error) => {
+    // Handle unauthorized access - clear session and let app handle redirect
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      console.warn('[StudyBuddy API] Session expired');
     }
-    console.error('[StudyBuddy API] Error:', error.response?.data?.message || error.message);
     return Promise.reject(error);
   }
 );
 
-// user authentication APIs
+// ============== User Authentication APIs ==============
 export const userAPI = {
+  /** Register a new user account */
   register: (name, email, password) =>
     api.post('/users/register', { name, email, password }),
   
+  /** Login with email and password to get JWT token */
   login: (email, password) =>
     api.post('/users/login', { email, password }),
   
+  /** Get current logged-in user's profile */
   getProfile: () =>
     api.get('/users/profile'),
   
+  /** Retrieve all users (admin function) */
   getAllUsers: () =>
     api.get('/users'),
   
+  /** Get specific user by ID */
   getUserById: (id) =>
     api.get(`/users/${id}`),
   
+  /** Update user information */
   updateUser: (id, userData) =>
     api.put(`/users/${id}`, userData),
   
+  /** Delete user account */
   deleteUser: (id) =>
     api.delete(`/users/${id}`)
 };
 
-// subject management APIs
+// ============== Subject Management APIs ==============
 export const subjectAPI = {
+  /** Get all subjects for current user */
   getAllSubjects: () =>
     api.get('/subjects'),
   
+  /** Get specific subject by ID */
   getSubjectById: (id) =>
     api.get(`/subjects/${id}`),
   
+  /** Create new study subject */
   createSubject: (name, description) =>
     api.post('/subjects', { name, description }),
   
+  /** Update existing subject */
   updateSubject: (id, name, description) =>
     api.put(`/subjects/${id}`, { name, description }),
   
+  /** Delete subject */
   deleteSubject: (id) =>
     api.delete(`/subjects/${id}`)
 };
 
-// study session APIs
+// ============== Study Session APIs ==============
 export const sessionAPI = {
+  /** Get all study sessions */
   getAllSessions: () =>
     api.get('/sessions'),
   
+  /** Get specific session by ID */
   getSessionById: (id) =>
     api.get(`/sessions/${id}`),
   
+  /** Get sessions filtered by status (pending/completed/cancelled) */
   getSessionsByStatus: (status) =>
     api.get(`/sessions/status/${status}`),
   
+  /** Create new study session */
   createSession: (sessionData) =>
     api.post('/sessions', sessionData),
   
+  /** Update existing session */
   updateSession: (id, sessionData) =>
     api.put(`/sessions/${id}`, sessionData),
   
+  /** Delete session */
   deleteSession: (id) =>
     api.delete(`/sessions/${id}`)
 };
