@@ -3,7 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { userAPI } from '../services/api';
 import './Auth.css';
 
-function Register() {
+/**
+ * Register Page
+ * Handles new user account creation.
+ * On success, automatically logs the user in and redirects to the dashboard.
+ */
+function Register({ onLogin }) {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -12,70 +17,88 @@ function Register() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  /**
+   * Validates all fields then submits the registration request.
+   * Auto-logs the user in after a successful registration so they
+   * land directly on the dashboard without an extra login step.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Client-side validation
+    // Trim and validate name
     const trimmedName = name.trim();
     if (!trimmedName) {
-      setError('Please enter your full name');
+      setError('Name is required');
       return;
     }
-
     if (trimmedName.length < 2) {
-      setError('Name must be at least 2 characters long');
+      setError('Name must be at least 2 characters');
       return;
     }
-
     if (trimmedName.length > 100) {
-      setError('Name is too long (maximum 100 characters)');
+      setError('Name cannot exceed 100 characters');
       return;
     }
 
+    // Trim and validate email format
     const trimmedEmail = email.trim();
     if (!trimmedEmail) {
-      setError('Email address is required');
+      setError('Email is required');
       return;
     }
-
     if (!trimmedEmail.includes('@') || !trimmedEmail.includes('.')) {
-      setError('Please enter a valid email address');
+      setError('Please enter a valid email');
       return;
     }
 
+    // Validate password strength
     if (!password) {
       setError('Password is required');
       return;
     }
-
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('Password must be at least 6 characters');
       return;
     }
-
     if (password.length > 128) {
       setError('Password is too long');
       return;
     }
 
+    // Ensure both password fields match
     if (!confirmPassword) {
       setError('Please confirm your password');
       return;
     }
-
     if (password !== confirmPassword) {
-      setError('Passwords do not match. Please try again');
+      setError('Passwords do not match');
       return;
     }
 
     setLoading(true);
-
     try {
-      await userAPI.register(trimmedName, trimmedEmail, password);
-      navigate('/login');
+      // Register the user account
+      const registerRes = await userAPI.register(trimmedName, trimmedEmail, password);
+
+      // Auto-login: if the API returns a token on registration, use it directly;
+      // otherwise perform a follow-up login call for a seamless experience.
+      let userData, token;
+      if (registerRes.data?.data?.token) {
+        userData = registerRes.data.data.user;
+        token = registerRes.data.data.token;
+      } else {
+        const loginRes = await userAPI.login(trimmedEmail, password);
+        userData = loginRes.data.data.user;
+        token = loginRes.data.data.token;
+      }
+
+      // Update global auth state and redirect to dashboard
+      onLogin(userData, token);
+      navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration could not be completed. Please try again or use a different email.');
+      const errorMsg = err.response?.data?.message || 'Registration failed. Please try again.';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -86,10 +109,12 @@ function Register() {
       <div className="auth-box">
         <h1>📚 StudyBuddy</h1>
         <h2>Create Your Account</h2>
-        
+
+        {/* Error feedback */}
         {error && <div className="error-message">{error}</div>}
-        
+
         <form onSubmit={handleSubmit}>
+          {/* Full name */}
           <div className="form-group">
             <label>Full Name</label>
             <input
@@ -102,6 +127,7 @@ function Register() {
             />
           </div>
 
+          {/* Email address */}
           <div className="form-group">
             <label>Email Address</label>
             <input
@@ -114,18 +140,20 @@ function Register() {
             />
           </div>
 
+          {/* Password */}
           <div className="form-group">
             <label>Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a password"
+              placeholder="Create a password (min 6 characters)"
               required
               disabled={loading}
             />
           </div>
 
+          {/* Confirm password */}
           <div className="form-group">
             <label>Confirm Password</label>
             <input

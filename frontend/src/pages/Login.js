@@ -14,38 +14,39 @@ function Login({ onLogin }) {
     e.preventDefault();
     setError('');
     
-    // Client-side validation
+    // Validate email
     const trimmedEmail = email.trim();
     if (!trimmedEmail) {
-      setError('Email address is required to login');
+      setError('Email is required');
       return;
     }
-    
     if (!trimmedEmail.includes('@')) {
-      setError('Please enter a valid email address');
+      setError('Please enter a valid email');
       return;
     }
     
+    // Validate password
     if (!password) {
       setError('Password is required');
       return;
     }
-    
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
       return;
     }
     
+    // Submit credentials to backend
     setLoading(true);
-
     try {
       const response = await userAPI.login(trimmedEmail, password);
       const { data } = response.data;
       
+      // Update app state and navigate to dashboard
       onLogin(data.user, data.token);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Email or password is incorrect. Please try again.');
+      const errorMsg = err.response?.data?.message || 'Login failed. Please check your credentials.';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
